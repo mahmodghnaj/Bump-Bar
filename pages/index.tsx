@@ -16,39 +16,43 @@ const Page: React.FC = () => {
   const [keyPressInfos, setKeyPressInfos] = useState<{
     [key: string]: KeyPressInfo;
   }>({});
+  const [pressedKeys, setPressedKeys] = useState<string[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
 
   const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
 
-  const handleKeyPress = (
+  const handleKeyDown = (
     key: string,
     label: string,
     event: React.KeyboardEvent<HTMLInputElement>
   ) => {
-    if (event.key !== "Backspace") {
-      setInputValues((prevValues) => ({
-        ...prevValues,
-        [key]: "DONE",
-      }));
-      setKeyPressInfos((prevInfos) => ({
-        ...prevInfos,
-        [key]: {
-          code: event.code,
-          nameKey: event.key,
-          btn: label,
-        },
-      }));
-      focusNextInput(key);
-    } else {
-      setInputValues((prevValues) => ({
-        ...prevValues,
-        [key]: "",
-      }));
-      setKeyPressInfos((prevInfos) => {
-        const newInfos = { ...prevInfos };
-        delete newInfos[key];
-        return newInfos;
-      });
-    }
+    if (event.repeat) return;
+    setIsRecording(true);
+    //@ts-ignore
+    setPressedKeys((prevKeys) => [...new Set([...prevKeys, event.code])]); //
+  };
+
+  const handleKeyUp = (key: string, label: string) => {
+    if (!isRecording) return;
+
+    const combinedKeys = pressedKeys.join(" + ");
+
+    setInputValues((prevValues) => ({
+      ...prevValues,
+      [key]: "DONE",
+    }));
+    setKeyPressInfos((prevInfos) => ({
+      ...prevInfos,
+      [key]: {
+        code: "Multi-Key",
+        nameKey: combinedKeys,
+        btn: label,
+      },
+    }));
+
+    setPressedKeys([]); //
+    setIsRecording(false);
+    focusNextInput(key);
   };
 
   const focusNextInput = (currentKey: string) => {
@@ -58,6 +62,7 @@ const Page: React.FC = () => {
     ];
     const currentIndex = allKeys.indexOf(currentKey);
     const nextKey = allKeys[currentIndex + 1];
+
     if (nextKey && inputRefs.current[nextKey]) {
       //@ts-ignore
       inputRefs.current[nextKey].focus();
@@ -70,7 +75,7 @@ const Page: React.FC = () => {
     return Object.entries(infos)
       .map(
         ([key, info]) =>
-          `name btn: ${info.btn} -  Code: ${info.code} - name key: ${info.nameKey}`
+          `name btn: ${info.btn} - Code: ${info.code} - name key: ${info.nameKey}`
       )
       .join("\n\n");
   };
@@ -93,12 +98,14 @@ const Page: React.FC = () => {
       Object.values(inputValues).every((value) => value === "DONE")
     );
   };
+
   useEffect(() => {
     const firstKey = `btn-0`;
     if (inputRefs.current[firstKey]) {
       inputRefs.current[firstKey].focus();
     }
   }, []);
+
   return (
     <div className="w-full h-full flex flex-col pt-20 items-center bg-gray-200">
       <h1 className="text-7xl font-bold">Bump Bar</h1>
@@ -119,7 +126,8 @@ const Page: React.FC = () => {
                   type="text"
                   className="size-[100px] rounded-xl border-md border-blue-300 border-4 text-3xl text-green-500 text-center outline-none focus:shadow-2xl shadow-sky-950 focus:border-blue-950"
                   value={inputValues[key] || ""}
-                  onKeyDown={(e) => handleKeyPress(key, item, e)}
+                  onKeyDown={(e) => handleKeyDown(key, item, e)}
+                  onKeyUp={() => handleKeyUp(key, item)}
                 />
               </div>
             </div>
@@ -143,7 +151,8 @@ const Page: React.FC = () => {
                   required
                   className="size-[100px] rounded-xl border-md border-blue-300 border-4 text-3xl text-green-500 text-center outline-none focus:border-blue-950"
                   value={inputValues[key] || ""}
-                  onKeyDown={(e) => handleKeyPress(key, `Number ${item}`, e)}
+                  onKeyDown={(e) => handleKeyDown(key, `Number ${item}`, e)}
+                  onKeyUp={() => handleKeyUp(key, `Number ${item}`)}
                 />
               </div>
             </div>
