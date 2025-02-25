@@ -3,7 +3,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 
 interface KeyPressInfo {
-  code: number;
+  code: string;
   nameKey: string;
   btn: string;
 }
@@ -32,7 +32,7 @@ const Page: React.FC = () => {
       setKeyPressInfos((prevInfos) => ({
         ...prevInfos,
         [key]: {
-          code: event.keyCode,
+          code: event.code,
           nameKey: event.key,
           btn: label,
         },
@@ -70,7 +70,7 @@ const Page: React.FC = () => {
     return Object.entries(infos)
       .map(
         ([key, info]) =>
-          `name btn: ${info.btn} - key Code: ${info.code} - name key: ${info.nameKey}`
+          `name btn: ${info.btn} -  Code: ${info.code} - name key: ${info.nameKey}`
       )
       .join("\n\n");
   };
