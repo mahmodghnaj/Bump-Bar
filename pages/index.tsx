@@ -59,6 +59,7 @@ const Page: React.FC = () => {
             <div className="font-extrabold text-2xl">{label}</div>
             <div className="mt-4">
               <input
+                // @ts-ignore
                 ref={(el) => (inputRefs.current[label] = el)}
                 type="text"
                 className="size-[100px] rounded-xl border-4 border-blue-300 text-3xl text-green-500 text-center outline-none focus:border-blue-950"
