@@ -2,7 +2,8 @@ import React, { useState, useRef } from "react";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-const labels = ["BUMP", "RECALL", "SUM", "PAGE"];
+const labels = ["BUMP", "RECALL", "SUM", "PAGE", "Up", "Down"];
+const numbers = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "REDRAW"];
 
 const Page: React.FC = () => {
   const [inputValues, setInputValues] = useState<{ [key: string]: string }>({});
@@ -37,7 +38,7 @@ const Page: React.FC = () => {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
-    labels.forEach((label, index) => {
+    [...labels, ...numbers].forEach((label, index) => {
       doc.text(
         `${label}: ${keyPressInfos[label] || "No Input"}`,
         10,
@@ -48,9 +49,9 @@ const Page: React.FC = () => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col pt-20 items-center bg-gray-200">
+    <div className="w-full h-full flex flex-col pt-5 items-center bg-gray-200">
       <h1 className="text-7xl font-bold">Bump Bar</h1>
-      <div className="flex space-x-6 mt-8">
+      <div className="flex flex-wrap mx-8 items-center justify-center space-x-6 mt-8">
         {labels.map((label, index) => (
           <div
             key={label}
@@ -62,7 +63,30 @@ const Page: React.FC = () => {
                 // @ts-ignore
                 ref={(el) => (inputRefs.current[label] = el)}
                 type="text"
-                className="size-[100px] rounded-xl border-4 border-blue-300 text-3xl text-green-500 text-center outline-none focus:border-blue-950"
+                className="size-[80px] rounded-xl border-4 border-blue-300 text-xl text-green-500 text-center outline-none focus:border-blue-950"
+                value={inputValues[label] || ""}
+                onKeyDown={(e) => handleKeyDown(label, e)}
+                onKeyUp={() => handleKeyUp(label)}
+                onKeyPress={(e) => e.code === "Tab" && e.preventDefault()}
+                readOnly
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-wrap mx-8 items-center justify-center space-x-6 mt-8">
+        {numbers.map((label, index) => (
+          <div
+            key={label}
+            className="flex flex-col items-center justify-center"
+          >
+            <div className="font-extrabold text-2xl">{label}</div>
+            <div className="mt-4">
+              <input
+                // @ts-ignore
+                ref={(el) => (inputRefs.current[label] = el)}
+                type="text"
+                className="size-[80px] rounded-xl border-4 border-blue-300 text-xl text-green-500 text-center outline-none focus:border-blue-950"
                 value={inputValues[label] || ""}
                 onKeyDown={(e) => handleKeyDown(label, e)}
                 onKeyUp={() => handleKeyUp(label)}
